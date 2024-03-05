@@ -10,7 +10,7 @@ Requirements:
 
 - Rebar3
 
-- Postgres Database to store MQTT Published message and along with an errors table, created with following DDL to store error happens during inserting to database
+- PostgreSQL Database for storing MQTT-published messages, accompanied by an error table. The error table, defined with the provided Data Definition Language (DDL) below, is designed to capture errors that may arise during the insertion of data into the database.
 
 ```bash
 CREATE TABLE errors (
