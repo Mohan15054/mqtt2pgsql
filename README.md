@@ -1,27 +1,43 @@
 # mqtt2pgsql
 
-EMQX Plugin push MQTT Publish message to PostgreSQL
-
+EMQX Plugin which stores publish message in PostgreSQL
 
 ## Build
 
 Requirements:
-- Erlang/OTP 25 [erts-13.2.2] 
+
+- Erlang/OTP 25 [erts-13.2.2]
+
 - Rebar3
 
-Build command
+- Postgres Database to store MQTT Published message and along with an errors table, created with following DDL to store error happens during inserting to database
+
+```bash
+CREATE TABLE errors (
+  id SERIAL PRIMARY KEY,
+  database_time  timestamp with time zone default (now()),
+  mqtt_time timestamp with time zone,
+  client_id  TEXT,
+  headers  TEXT,
+  topic TEXT,
+  payload TEXT,
+  error_message TEXT
+); 
+```
+
+### Build command
 
 ```bash
 make
 ```
 
-Build and Release command
+### Build and Release command
 
 ```bash
 make && make rel
 ```
 
-Build Release output location
+### Build Release output location
 
 ```bash
 _build/default/emqx_plugrel/mqtt2pgsql-<vsn>.tar.gz
