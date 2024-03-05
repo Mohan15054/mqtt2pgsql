@@ -27,6 +27,35 @@ Build Release output location
 _build/default/emqx_plugrel/mqtt2pgsql-<vsn>.tar.gz
 ```
 
+## Install
+
+### Via EMQX Dashboard
+
+- Go to plugin location in Dashboard   
+   Location : http://<EMQX_DASHBOARD_HOSTNAME_OR_IP>:<EMQX_DASHBOARD_PORT>/#/plugins   
+   Example : http://localhost:18083/#/plugins  
+
+- Click `Install Plugin` button on Right corner
+
+- Select choose file and choose the mqtt2pgsql-<vsn>.tar.gz file from `_build/default/emqx_plugrel/`
+
+- Click button `Install`
+
+- Plugin will be listed, Click on `Start` button
+
+### Via CLI
+
+Use CLI to install the compiled package:
+
+```bash
+./bin/emqx ctl plugins install mqtt2pgsql
+```
+When you don't need the plugin, you can easily uninstall it with CLI:
+
+```bash
+./bin/emqx ctl plugins uninstall mqtt2pgsql
+```
+
 ## Configuration Parameters
 
 ### 1. **host**
