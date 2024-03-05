@@ -1,31 +1,31 @@
-%%%-------------------------------------------------------------------
-%% @doc mqtt2pgsql top level supervisor.
-%% @end
-%%%-------------------------------------------------------------------
-
 -module(mqtt2pgsql_sup).
 
 -behaviour(supervisor).
 
--export([start_link/0]).
+-export([start_link/1]).
+
+-export([start_pgsql_pool/1]).
 
 -export([init/1]).
 
-start_link() ->
-    supervisor:start_link({local, ?MODULE}, ?MODULE, []).
+start_link(Args) ->
+    supervisor:start_link({local, ?MODULE}, ?MODULE, Args).
 
-%% sup_flags() = #{strategy => strategy(),         % optional
-%%                 intensity => non_neg_integer(), % optional
-%%                 period => pos_integer()}        % optional
-%% child_spec() = #{id => child_id(),       % mandatory
-%%                  start => mfargs(),      % mandatory
-%%                  restart => restart(),   % optional
-%%                  shutdown => shutdown(), % optional
-%%                  type => worker(),       % optional
-%%                  modules => modules()}   % optional
-init([]) ->
-    SupFlags = #{strategy => one_for_one,
-                 intensity => 0,
-                 period => 1},
-    ChildSpecs = [],
-    {ok, {SupFlags, ChildSpecs}}.
+init(Args) ->
+    {ok, PgsqlPool} = start_pgsql_pool(Args),
+    Children = [
+        PgsqlPool
+    ],
+    RestartStrategy = {one_for_one, 1, 5},
+    {ok, {RestartStrategy, Children}}.
+
+start_pgsql_pool(Args) ->
+    PoolSize = proplists:get_value(poolSize, Args),
+
+    ChildSpec = poolboy:child_spec(mqtt2pgsql_psql_pool_worker, [
+        {name, {local, mqtt2pgsql_psql_pool_worker}},
+        {worker_module, mqtt2pgsql_psql_pool_worker},
+        {size, PoolSize}
+    ],Args),
+
+    {ok, ChildSpec}.

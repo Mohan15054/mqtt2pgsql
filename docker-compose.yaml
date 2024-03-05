@@ -1,0 +1,54 @@
+version: "3.7"
+name: "emqx_2_pgsql"
+
+
+networks:
+  emqx2pgsql-base-net:
+    driver: bridge
+
+
+volumes:
+  emqx-db-volume:
+  emqx-volume:
+
+services:
+  emqx-db:
+    image: "postgres:16.1-alpine"
+    container_name: emqx-db
+    networks:
+      - emqx2pgsql-base-net
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - emqx-db-volume:/var/lib/postgresql/data
+
+  emqx:
+    image: emqx:5.5.0
+    container_name: emqx
+    healthcheck:
+      test: ["CMD", "/opt/emqx/bin/emqx", "ctl", "status"]
+      interval: 5s
+      timeout: 25s
+      retries: 5
+    restart: "always"
+    networks:
+      - emqx2pgsql-base-net
+    ports:
+      - 1883:1883
+      - 8083:8083
+      - 8084:8084
+      - 8883:8883
+      - 18083:18083
+    depends_on:
+      - emqx-db
+    volumes:
+      - emqx-volume:/opt/emqx
+      - type: bind
+        source: ./priv/mqtt2pgsql.hocon
+        target: /opt/emqx/etc/mqtt2pgsql.hocon
+        bind:
+          create_host_path: true

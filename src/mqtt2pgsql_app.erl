@@ -1,14 +1,6 @@
-%%%-------------------------------------------------------------------
-%% @doc mqtt2pgsql public API
-%% @end
-%%%-------------------------------------------------------------------
-
 -module(mqtt2pgsql_app).
 
 -behaviour(application).
-
--include("mqtt2pgsql.hrl").
-
 
 -emqx_plugin(?MODULE).
 
@@ -18,31 +10,73 @@
 
 start(_StartType, _StartArgs) ->
 
-    {ok, Db} = application:get_env(mqtt2pgsql, db),
-    io:format("Database Host ~p~n ", [Db]),
+    {ok, Mqtt2PgsqlConfig} = hocon:load("etc/mqtt2pgsql.hocon"),
 
-    {ok, PidNames } = application:get_env(mqtt2pgsql, noofcon),
+    io:format("Mqtt2PgsqlConfig: ~p~n ", [Mqtt2PgsqlConfig]),
 
-    {ok, SchemaNo} = application:get_env(mqtt2pgsql, schemacount),
-    {ok, TableNo} = application:get_env(mqtt2pgsql, tablecount),
-    {ok, TablePre} = application:get_env(mqtt2pgsql, tablepre),
-    {ok, TablePost} = application:get_env(mqtt2pgsql, tablepost),    
+    PoolSize = maps:get(<<"poolsize">>, maps:get(<<"mqtt2pgsql">>, Mqtt2PgsqlConfig)),
+    io:format("PoolSize: ~p~n", [PoolSize]),
 
-    {ok ,Host} = application:get_env(mqtt2pgsql, host), 
-    {ok ,Port} = application:get_env(mqtt2pgsql, port),
-    {ok ,Username} = application:get_env(mqtt2pgsql, username),
-    {ok ,Password} = application:get_env(mqtt2pgsql, password),
-    {ok, Dbname} = application:get_env(mqtt2pgsql, dbname),
+    Host = maps:get(<<"host">>, maps:get(<<"mqtt2pgsql">>, Mqtt2PgsqlConfig)),
+    io:format("Host: ~p~n", [Host]),
+
+    Port = maps:get(<<"port">>, maps:get(<<"mqtt2pgsql">>, Mqtt2PgsqlConfig)),
+    io:format("Port: ~p~n", [Port]),
+
+    Username = maps:get(<<"username">>, maps:get(<<"mqtt2pgsql">>, Mqtt2PgsqlConfig)),
+    io:format("Username: ~p~n", [Username]),
+
+    Password = maps:get(<<"password">>, maps:get(<<"mqtt2pgsql">>, Mqtt2PgsqlConfig)),
+    io:format("Password: ~p~n", [Password]),
+
+    Dbname = maps:get(<<"dbname">>, maps:get(<<"mqtt2pgsql">>, Mqtt2PgsqlConfig)),
+    io:format("Dbname: ~p~n", [Dbname]),
+
+    SupArgs = [{poolSize, PoolSize},{hostname, Host}, {port, Port}, {username, Username}, {password, Password}, {database,Dbname}],
+
+    SchemaNo = maps:get(<<"schemacount">>, maps:get(<<"mqtt2pgsql">>, Mqtt2PgsqlConfig)),
+    io:format("SchemaNo: ~p~n", [SchemaNo]),
+
+    TableNo = maps:get(<<"tablecount">>, maps:get(<<"mqtt2pgsql">>, Mqtt2PgsqlConfig)),
+    io:format("TableNo: ~p~n", [TableNo]),
+
+    TablePre = maps:get(<<"tablepre">>, maps:get(<<"mqtt2pgsql">>, Mqtt2PgsqlConfig)),
+    io:format("TablePre: ~p~n", [TablePre]),
+
+    TablePost = maps:get(<<"tablepost">>, maps:get(<<"mqtt2pgsql">>, Mqtt2PgsqlConfig)),
+    io:format("TablePost: ~p~n", [TablePost]),
+
+    TablePost = maps:get(<<"tablepost">>, maps:get(<<"mqtt2pgsql">>, Mqtt2PgsqlConfig)),
+    io:format("TablePost: ~p~n", [TablePost]),
+
+    TablePost = maps:get(<<"tablepost">>, maps:get(<<"mqtt2pgsql">>, Mqtt2PgsqlConfig)),
+    io:format("TablePost: ~p~n", [TablePost]),
+
+    ErrorSchema = maps:get(<<"error_schema">>, maps:get(<<"mqtt2pgsql">>, Mqtt2PgsqlConfig)),
+    io:format("ErrorSchema: ~p~n", [ErrorSchema]),
+
+    ErrorTable = maps:get(<<"error_table">>, maps:get(<<"mqtt2pgsql">>, Mqtt2PgsqlConfig)),
+    io:format("ErrorTable: ~p~n", [ErrorTable]),
 
     % Host, Port, Username, Password, Dbname, PidNames, SchemaNo, TableNo, TablePre, TablePost
-    {ok, Sup} = mqtt2pgsql_sup:start_link(),
+    {ok, Sup} = mqtt2pgsql_sup:start_link(SupArgs),
 
-    mqtt2pgsql:load(Host, Port, Username, Password, Dbname, PidNames, SchemaNo, TableNo, TablePre, TablePost),
+    mqtt2pgsql:load(SchemaNo, TableNo, TablePre, TablePost, ErrorSchema, ErrorTable),
 
-    % {ok, MqttParam} = application:get_env(mqtt2pgsql, mqtt),
-    % io:format("Database Host ~p~n ", [MqttParam]),
+    emqx_ctl:register_command(mqtt2pgsql, {mqtt2pgsql_cli, cmd}),
     {ok, Sup}.
 
 stop(_State) ->
-    {ok, PidNames } = application:get_env(mqtt2pgsql, noofcon),
-    mqtt2pgsql:unload(PidNames).
+    emqx_ctl:unregister_command(mqtt2pgsql),
+    mqtt2pgsql:unload().
+
+
+print_variable_type(Var) ->
+    case Var of
+        _ when is_atom(Var) -> io:format("Variable is an atom~n");
+        _ when is_binary(Var) -> io:format("Variable is a binary~n");
+        _ when is_list(Var) -> io:format("Variable is a list~n");
+        _ when is_integer(Var) -> io:format("Variable is an integer~n");
+        _ when is_float(Var) -> io:format("Variable is a float~n");
+        _ -> io:format("Variable is of unknown type~n")
+    end.

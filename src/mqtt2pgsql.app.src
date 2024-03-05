@@ -1,14 +1,15 @@
 {application, mqtt2pgsql,
- [{description, "Mqtt Plguin to persist data into PostgreSQL"},
-  {vsn, "git"},
+ [{description, "Another amazing EMQX plugin."},
+  {vsn, "0.1.0"},
   {modules, []},
-  {registered, []},
+  {registered, [mqtt2pgsql_sup]},
+  {applications, [
+            kernel,
+            stdlib,
+            map_sets
+    ]},
   {mod, {mqtt2pgsql_app, []}},
-  {applications,
-   [kernel,
-    stdlib
-   ]},
-  {env,[]},
-  {licenses, ["Apache 2.0"]},
-  {links, []}
+  {env, []},
+  {licenses, ["Apache-2.0"]},
+  {maintainers, ["Arvindh <arvindh91@gmail.com>"]}
  ]}.

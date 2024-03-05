@@ -1,0 +1,16 @@
+## This is a demo config in HOCON format
+## The same format used by EMQX since 5.0
+mqtt2pgsql {
+    host = emqx-db
+    port = 5432
+    username = postgres
+    password = postgres
+    dbname = postgres
+    poolsize = 10
+    schemacount = 3
+    tablecount = 4
+    tablepre = "\""
+    tablepost =  "\""
+    error_schema = public
+    error_table = errors
+}

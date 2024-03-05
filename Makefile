@@ -1,35 +1,51 @@
 ## shallow clone for speed
 
-REBAR_GIT_CLONE_OPTIONS += --depth 1
-export REBAR_GIT_CLONE_OPTIONS
+BUILD_WITHOUT_QUIC ?= true
+export BUILD_WITHOUT_QUIC
+BUILD_WITHOUT_ROCKSDB ?= true
+export BUILD_WITHOUT_ROCKSDB
 
-REBAR = rebar3
+REBAR ?= $(or $(shell which rebar3 2>/dev/null),$(CURDIR)/rebar3)
+REBAR_VERSION ?= 3.19.0-emqx-1
+
+.PHONY: all
 all: compile
 
-compile:
+.PHONY: get-rebar3
+get-rebar3:
+	@$(CURDIR)/get-rebar3 $(REBAR_VERSION)
+
+$(REBAR):
+	$(MAKE) get-rebar3
+
+.PHONY: compile
+compile: $(REBAR)
 	$(REBAR) compile
 
-clean: distclean
-
-ct: compile
+.PHONY: ct
+ct: $(REBAR)
 	$(REBAR) as test ct -v
 
-eunit: compile
+.PHONY: eunit
+eunit: $(REBAR)
 	$(REBAR) as test eunit
 
-xref:
+.PHONY: xref
+xref: $(REBAR)
 	$(REBAR) xref
 
+.PHONY: cover
+cover: $(REBAR)
+	$(REBAR) cover
+
+.PHONY: clean
+clean: distclean
+
+.PHONY: distclean
 distclean:
 	@rm -rf _build
 	@rm -f data/app.*.config data/vm.*.args rebar.lock
 
-CUTTLEFISH_SCRIPT = _build/default/lib/cuttlefish/cuttlefish
-
-$(CUTTLEFISH_SCRIPT):
-	@${REBAR} get-deps
-	@if [ ! -f cuttlefish ]; then make -C _build/default/lib/cuttlefish; fi
-
-app.config: $(CUTTLEFISH_SCRIPT) etc/mqtt2pgsql.conf
-	$(verbose) $(CUTTLEFISH_SCRIPT) -l info -e etc/ -c etc/mqtt2pgsql.conf -i priv/mqtt2pgsql.schema -d data
-
+.PHONY: rel
+rel: $(REBAR)
+	$(REBAR) emqx_plugrel tar
