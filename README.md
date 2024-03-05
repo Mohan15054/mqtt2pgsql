@@ -115,11 +115,11 @@ When you don't need the plugin, you can easily uninstall it with CLI:
    - **Example:** `tablepost =  "\""`
 
 ### 11. **error_schema**
-   - **Description:** Specifies the schema to store error records if there are issues during data processing.
+   - **Description:** Specifies the schema to store error records if there are issues during data processing or during the insertion of data into the database.
    - **Example:** `error_schema = public`
 
 ### 12. **error_table**
-   - **Description:** Specifies the table name to store error records if there are issues during data processing.
+   - **Description:** Specifies the table name to store error records if there are issues during data processing or during the insertion of data into the database.
    - **Example:** `error_table = errors`
 
 ### Configuration loction
