@@ -20,7 +20,7 @@ display_help() {
     echo "  --col3 COL3             Specify the value for col3 (default: $default_col3)"
     echo "  --col4 COL4             Specify the value for col4 (default: $default_col4)"
     echo "  --invalid-topic INVALID_TOPIC Specify the invalid topic (default: $default_invalid_topic)"
-    echo "  --help                  Display this help menu"
+    echo "  -h, --help              Display this help menu"
     exit 0
 }
 
@@ -58,7 +58,7 @@ while [[ $# -gt 0 ]]; do
         shift # past argument
         shift # past value
         ;;
-        --help)
+        -h|--help)
         display_help
         ;;
         *)    # unknown option
