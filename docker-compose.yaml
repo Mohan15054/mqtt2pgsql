@@ -52,3 +52,8 @@ services:
         target: /opt/emqx/etc/mqtt2pgsql.hocon
         bind:
           create_host_path: true
+      - type: bind
+        source: ./emqx.conf
+        target: /opt/emqx/etc/emqx.conf
+        bind:
+          create_host_path: true

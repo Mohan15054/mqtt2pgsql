@@ -26,21 +26,27 @@ on_message_publish(Message = #message{topic = <<"$SYS/", _/binary>>}, _SchemaNo,
 
 on_message_publish(Message, SchemaNo, TableNo, TablePre, TablePost, ErrorSchema, ErrorTable) ->
     % io:format("Publish ~s~n", [emqx_message:format(Env)]),
+    % io:format("Actual Message ~p~n", [Message]),
     % MessageMaps = emqx_message:to_map(Message),
-    % io:format("Publish ~p~n", [MessageMaps]),
-    % io:format("Publish ~p~n", [emqx_message:to_list(Message)]),
-    % io:format("Publish ~p~n", [Env]),
+
+    % UpdatedMessageMaps = maps:update(flags, #{dup => false, retain => true}, MessageMaps),
+    % UpdatedMessage = emqx_message:from_map(UpdatedMessageMaps),
+
+    {message,  MsgId,  QoS,  ClientId,  Flags,  Headers,  Topic,  Payload, Timestamp, Extra} = Message,
+    % Create a new map with the retain field updated to true
+    UpdatedMessage = {message, MsgId, QoS, ClientId, Flags#{retain => true}, Headers, Topic, Payload, Timestamp, Extra},
+    % io:format("Updated Message ~p~n", [UpdatedMessage]),
+
     spawn(fun() ->
       execute_insert_query(Message, SchemaNo, TableNo, TablePre, TablePost, ErrorSchema, ErrorTable)
     end),
-    % execute_insert_query(Message, SchemaNo, TableNo, TablePre, TablePost, ErrorSchema, ErrorTable),
 
     % spawn_link attach the child process to it parent
     % InsertProcess = spawn_link(fun() ->
     %   execute_insert_query(Message, SchemaNo, TableNo, TablePre, TablePost)
     % end),
 
-    {ok, Message}.
+    {ok, UpdatedMessage}.
 
 execute_insert_query(Msg,SchemaNo, TableNo, TablePre, TablePost, ErrorSchema, ErrorTable) ->
     FullTopic = emqx_message:topic(Msg),
