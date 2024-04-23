@@ -13,7 +13,7 @@ start_link(Args) ->
 
 init(Args) ->
     process_flag(trap_exit, true),
-     start_connection_loop(Args).
+    start_connection_loop(Args).
 
 start_connection_loop(Args) ->
     Hostname = proplists:get_value(hostname, Args),
